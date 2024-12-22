@@ -26,21 +26,25 @@ public class TCP_Sender extends TCP_Sender_ADT {
 
         //生成TCP数据报（设置序号和数据字段/校验和),注意打包的顺序
         tcpH.setTh_seq(dataIndex * appData.length + 1);//包序号设置为字节流号：
-
+        //tcpH.setTh_seq(dataIndex%2);//将序号限制为0和1（2.0版本）
         tcpS.setData(appData);
         tcpPack = new TCP_PACKET(tcpH, tcpS, destinAddr);
         //更新带有checksum的TCP 报文头
         tcpH.setTh_sum(CheckSum.computeChkSum(tcpPack));
-
         tcpPack.setTcpH(tcpH);
-
-
         //发送TCP数据报
         udt_send(tcpPack);
         flag = 0;
         //等待ACK报文
         //waitACK();
-        while (flag==0);
+        //recv(ackPack);
+        //waitACK();
+
+        while (flag==0)
+        {
+           // recv(ackPack);
+
+        }
     }
     /*
     0.信道无差错
@@ -66,19 +70,24 @@ public class TCP_Sender extends TCP_Sender_ADT {
     //需要修改
     public void waitACK() {
         //循环检查ackQueue
-        //循环检查确认号对列中是否有新收到的ACK
+        //循环检查确认号队列中是否有新收到的ACK
         if(!ackQueue.isEmpty()){
             int currentAck=ackQueue.poll();
             // System.out.println("CurrentAck: "+currentAck);
-            if (currentAck == tcpPack.getTcpH().getTh_seq()){
+            //若新ack和要发送的数据报的序号相同，就说明无需重传。
+            if (currentAck == tcpPack.getTcpH().getTh_seq())
+            {
                 System.out.println("Clear: "+tcpPack.getTcpH().getTh_seq());
                 flag = 1;
                 //break;
-            }else{
+            }//要重传
+            else{
                 System.out.println("Retransmit: "+tcpPack.getTcpH().getTh_seq());
                 udt_send(tcpPack);
+
                 flag = 0;
             }
+
         }
     }
 

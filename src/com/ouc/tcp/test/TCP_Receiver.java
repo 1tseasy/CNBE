@@ -29,6 +29,7 @@ public class TCP_Receiver extends TCP_Receiver_ADT {
         if(CheckSum.computeChkSum(recvPack) == recvPack.getTcpH().getTh_sum()) {
             //生成ACK报文段（设置确认号）
             tcpH.setTh_ack(recvPack.getTcpH().getTh_seq());
+            //tcpH.setTh_ack((recvPack.getTcpH().getTh_seq()+1)%2);//ack=(x+1)模2 2.0版本
             ackPack = new TCP_PACKET(tcpH, tcpS, recvPack.getSourceAddr());
             tcpH.setTh_sum(CheckSum.computeChkSum(ackPack));
             //回复ACK报文段
@@ -42,6 +43,7 @@ public class TCP_Receiver extends TCP_Receiver_ADT {
             System.out.println("Recieved Packet"+recvPack.getTcpH().getTh_sum());
             System.out.println("Problem: Packet Number: "+recvPack.getTcpH().getTh_seq()+" + InnerSeq:  "+sequence);
             tcpH.setTh_ack(-1);
+            //tcpH.setTh_ack(recvPack.getTcpH().getTh_seq());//ack不变 2.0版本
             ackPack = new TCP_PACKET(tcpH, tcpS, recvPack.getSourceAddr());
             tcpH.setTh_sum(CheckSum.computeChkSum(ackPack));
             //回复ACK报文段
@@ -88,7 +90,7 @@ public class TCP_Receiver extends TCP_Receiver_ADT {
     //回复ACK报文段
     public void reply(TCP_PACKET replyPack) {
         //设置错误控制标志
-        tcpH.setTh_eflag((byte)0);	//eFlag = 0，信道无错误，接收方向发送方发送ACK或NACK信息时不会出现错误
+        tcpH.setTh_eflag((byte)1);	//eFlag = 0，信道无错误，接收方向发送方发送ACK或NACK信息时不会出现错误
         //发送数据报
         client.send(replyPack);
     }
